@@ -1,0 +1,7 @@
+services:
+  poc:
+    gpus: all
+    volumes:
+      - .:/workspaces/SILOK:cached
+    working_dir: /workspaces/SILOK
+    command: ["sleep", "infinity"]

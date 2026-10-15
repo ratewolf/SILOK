@@ -1,0 +1,7 @@
+services:
+  poc:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    command: ["python", "-m", "sillok_poc", "--help"]

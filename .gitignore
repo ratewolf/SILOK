@@ -1,0 +1,31 @@
+__pycache__/
+.pytest_cache/
+.venv/
+*.py[cod]
+.env
+*.db
+*.db-*
+data/raw/*
+!data/raw/.gitkeep
+reports/
+
+# Local credentials and environment variants
+.env.*
+!.env.example
+.aws/
+# Generated model artifacts and caches
+unsloth_compiled_cache/
+.cache/
+models/
+*.safetensors
+*.gguf
+# Other SQLite file extensions
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+# Editor/OS artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

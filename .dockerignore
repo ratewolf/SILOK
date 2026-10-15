@@ -1,0 +1,17 @@
+.git
+.venv
+**/__pycache__
+.pytest_cache
+.env
+.env.*
+.aws
+.cache
+unsloth_compiled_cache
+models
+data
+reports
+*.db
+*.sqlite
+*.sqlite3
+.vscode
+.idea

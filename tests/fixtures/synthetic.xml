@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC test data ONLY. These are not authentic Sillok records. -->
+<level2 id="fake_102">
+  <front><biblioData type="L"><title><mainTitle>테스트 2년</mainTitle></title><date>
+    <dateOccured date="1393" type="서기"/><dateOccured type="재위연도">태조 2</dateOccured>
+  </date></biblioData></front>
+  <level3 id="fake_102010"><level4 id="fake_10201006">
+    <front><biblioData type="L"><title><mainTitle>테스트 2년 1월 6일</mainTitle></title><date>
+      <dateOccured date="1393-01-06L0" type="서기"/>
+    </date></biblioData></front>
+    <level5 id="fake_10201006_001"><front><biblioData type="T">
+      <title><mainTitle>연습용 첫 기사</mainTitle></title>
+      <subjectClass>군사-관방</subjectClass>
+    </biblioData></front><text><content><paragraph>測試記事 一</paragraph></content></text></level5>
+    <level5 id="fake_10201006_002"><front><biblioData type="T">
+      <title><mainTitle>연습용 둘째 기사</mainTitle></title>
+      <subjectClass>외교</subjectClass>
+    </biblioData></front><text><content><paragraph>測試記事 二</paragraph></content></text></level5>
+  </level4></level3>
+</level2>
