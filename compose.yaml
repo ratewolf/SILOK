@@ -1,6 +1,8 @@
 services:
   poc:
-    build: .
+    build:
+      context: .
+      target: cpu
     volumes:
       - ./data:/app/data
       - ./reports:/app/reports

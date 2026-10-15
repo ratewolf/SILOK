@@ -109,15 +109,18 @@ def iter_articles(xml_path, assumed_reign=None):
             article = parse_article(elem, assumed_reign)
             if article is not None:
                 yield article
-            elem.clear()
-            while elem.getprevious() is not None:
-                del elem.getparent()[0]
+            _release_record(elem)
         elif lname(elem) in {"level4", "level3", "level2"}:
-            elem.clear()
-            parent = elem.getparent()
-            if parent is not None:
-                while elem.getprevious() is not None:
-                    del parent[0]
+            _release_record(elem)
+
+
+def _release_record(elem):
+    # Remove only the completed record. Earlier siblings include the parent's
+    # front/biblioData, which later articles still need for inherited metadata.
+    parent = elem.getparent()
+    elem.clear()
+    if parent is not None:
+        parent.remove(elem)
 
 
 def list_xml_files(path):

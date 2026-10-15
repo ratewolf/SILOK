@@ -23,6 +23,8 @@ def inspect(path, assumed_reign):
 
 
 def import_files(path, db_path, limit, assumed_reign):
+    if limit < 1:
+        raise ValueError("--limit는 1 이상이어야 합니다.")
     files = list_xml_files(path)
     if not files:
         raise FileNotFoundError(f"XML 파일을 찾지 못했습니다: {path}")
@@ -68,12 +70,11 @@ def main():
         print(json.dumps(rows, ensure_ascii=False, indent=2))
         print("SQL 실행시간(초):", sec)
     elif args.cmd == "ask":
-        from .model import TextToSQL
-        model = TextToSQL()
-        sql = model.generate(args.question)
-        print("생성 SQL:", sql)
-        rows, sec = execute_readonly(args.db, sql)
-        print("결과:", json.dumps(rows, ensure_ascii=False, indent=2), "시간:", sec)
+        from .service import QuestionService
+        result = QuestionService(args.db).ask(args.question)
+        print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+        if result.status == "error":
+            raise SystemExit(1)
     elif args.cmd == "evaluate":
         from .evaluate import evaluate
         evaluate(args.db, args.output)

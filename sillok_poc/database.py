@@ -1,6 +1,7 @@
 """SQLite schema and read-only query executor for an educational PoC."""
 import sqlite3
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 SCHEMA = """
@@ -71,26 +72,66 @@ def _authorizer(action, arg1, arg2, database, trigger):
     return sqlite3.SQLITE_DENY
 
 
-def execute_readonly(db_path, sql, max_rows=20, timeout_sec=2.0):
-    """Execute limited SQL. Additional AST validation is advised before production."""
+class SQLValidationError(ValueError):
+    """Query is outside the supported read-only SQL subset."""
+
+
+class QueryTimeoutError(TimeoutError):
+    """SQLite exceeded its execution budget."""
+
+
+@dataclass
+class QueryResult:
+    columns: list[str]
+    rows: list[list]
+    truncated: bool
+    sql_time_sec: float
+
+
+def execute_query(db_path, sql, max_rows=20, timeout_sec=2.0):
+    """Return positional rows, column metadata, and explicit truncation status."""
+    if not isinstance(max_rows, int) or isinstance(max_rows, bool) or max_rows < 1:
+        raise ValueError("max_rows는 1 이상의 정수여야 합니다.")
+    if not isinstance(timeout_sec, (int, float)) or not 0 < timeout_sec < float("inf"):
+        raise ValueError("timeout_sec는 유한한 양수여야 합니다.")
     import re
     sql = sql.strip().rstrip(";").strip()
     if not re.match(r"(?is)^SELECT\s", sql):
-        raise ValueError("PoC에서는 SELECT로 시작하는 SQL만 허용합니다.")
+        raise SQLValidationError("현재는 SELECT로 시작하는 SQL만 허용합니다.")
     if ";" in sql:
-        raise ValueError("SQL 여러 문장은 허용되지 않습니다.")
+        raise SQLValidationError("SQL 여러 문장은 허용되지 않습니다.")
     db_path = Path(db_path).resolve()
     if not db_path.is_file():
         raise FileNotFoundError(f"DB가 없습니다: {db_path}")
     con = sqlite3.connect(db_path.as_uri() + "?mode=ro", uri=True)
-    con.row_factory = sqlite3.Row
     try:
         con.execute("PRAGMA query_only = ON")
         con.set_authorizer(_authorizer)
         start = time.monotonic()
         con.set_progress_handler(lambda: int(time.monotonic() - start > timeout_sec), 1000)
-        cursor = con.execute(sql)
-        rows = [dict(row) for row in cursor.fetchmany(max_rows)]
-        return rows, round(time.monotonic() - start, 4)
+        try:
+            cursor = con.execute(sql)
+            columns = [item[0] for item in cursor.description]
+            rows = [list(row) for row in cursor.fetchmany(max_rows + 1)]
+        except sqlite3.Error as exc:
+            if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_INTERRUPT:
+                raise QueryTimeoutError("SQL 실행 시간이 제한을 초과했습니다.") from exc
+            if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_AUTH or "not authorized" in str(exc):
+                raise SQLValidationError("허용되지 않은 테이블 또는 함수입니다.") from exc
+            raise
+        return QueryResult(columns, rows[:max_rows], len(rows) > max_rows,
+                           round(time.monotonic() - start, 4))
     finally:
         con.close()
+
+
+def execute_readonly(db_path, sql, max_rows=20, timeout_sec=2.0):
+    """Compatibility wrapper for the original CLI and data tests."""
+    result = execute_query(db_path, sql, max_rows, timeout_sec)
+    rows = []
+    for row in result.rows:
+        mapped = {}
+        for column, value in zip(result.columns, row):
+            mapped.setdefault(column, value)
+        rows.append(mapped)
+    return rows, result.sql_time_sec

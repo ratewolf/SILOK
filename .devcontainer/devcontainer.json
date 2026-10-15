@@ -1,6 +1,6 @@
 {
   "name": "SILOK Development",
-  "dockerComposeFile": ["../compose.yaml", "docker-compose.yml"],
+  "dockerComposeFile": ["../compose.yaml", "../compose.gpu.yaml", "docker-compose.yml"],
   "service": "poc",
   "workspaceFolder": "/workspaces/SILOK",
   "shutdownAction": "stopCompose"

@@ -1,0 +1,6 @@
+# GPU inference only; CPU/data contributors use requirements.txt.
+--extra-index-url https://download.pytorch.org/whl/cu130
+-c constraints-gpu.txt
+-r requirements.txt
+torch==2.14.1+cu130
+unsloth==2026.10.5

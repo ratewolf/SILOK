@@ -1,0 +1,14 @@
+services:
+  poc:
+    build:
+      context: .
+      target: gpu
+    gpus: all
+    environment:
+      HF_HOME: /opt/huggingface
+      SILOK_MODEL_REVISION: 11d1e533ccbe48c9135baeba83a16205ca4ca251
+    volumes:
+      - hf-cache:/opt/huggingface
+
+volumes:
+  hf-cache:
